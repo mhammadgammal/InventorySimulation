@@ -58,7 +58,7 @@ namespace InventorySimulation
                         string[] values = line.Split(',');
                         int demand = Int32.Parse((string)values[0]);
                         decimal prob = decimal.Parse(values[1]);
-                        System.DemandDistribution.Add(new Distribution(demand, prob));
+                        System.LeadDaysDistribution.Add(new Distribution(demand, prob));
                     }
                 }
             }
