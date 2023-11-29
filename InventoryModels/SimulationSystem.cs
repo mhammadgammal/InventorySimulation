@@ -14,6 +14,7 @@ namespace InventoryModels
             LeadDaysDistribution = new List<Distribution>();
             SimulationTable = new List<SimulationCase>();
             PerformanceMeasures = new PerformanceMeasures();
+            
         }
 
         ///////////// INPUTS /////////////
@@ -36,7 +37,8 @@ namespace InventoryModels
         {
             for (int i = 0;  i < DemandDistribution.Count; i++)
             {
-                
+
+                Console.WriteLine("Deman Destribution Count = " + DemandDistribution.Count);
                 if (i == 0)
                 {
                     DemandDistribution[i].CummProbability = DemandDistribution[i].Probability;
@@ -47,7 +49,7 @@ namespace InventoryModels
                     DemandDistribution[i].CummProbability = DemandDistribution[i - 1].CummProbability + DemandDistribution[i].Probability;
                     DemandDistribution[i].MinRange = DemandDistribution[i - 1].MaxRange + 1;
                 }
-                DemandDistribution[i].MaxRange = Decimal.ToInt32(DemandDistribution[i - 1].CummProbability * 100);
+                DemandDistribution[i].MaxRange = Decimal.ToInt32(DemandDistribution[i].CummProbability * 100);
             }
         }
 
@@ -66,9 +68,23 @@ namespace InventoryModels
                     LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i - 1].CummProbability + LeadDaysDistribution[i].Probability;
                     DemandDistribution[i].MinRange = DemandDistribution[i - 1].MaxRange + 1;
                 }
-                LeadDaysDistribution[i].MaxRange = Decimal.ToInt32(LeadDaysDistribution[i - 1].CummProbability * 100);
+                LeadDaysDistribution[i].MaxRange = Decimal.ToInt32(LeadDaysDistribution[i].CummProbability * 100);
             }
         }
 
+        public void BuildSimulationTable()
+        {
+            int Cycle = 1;
+            for (int i = 0; i < this.NumberOfDays; i++)
+            {
+                for (int j = 1; j <= 5; j++)
+                {
+                    SimulationCase SCase = new SimulationCase();
+                    SCase.costructCaseRow(this, Cycle, j);
+                    this.SimulationTable.Add(SCase);
+                }
+            }
+        }
+        
     }
 }

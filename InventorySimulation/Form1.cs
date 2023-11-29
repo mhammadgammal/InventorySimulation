@@ -25,6 +25,9 @@ namespace InventorySimulation
         private void PickFileButton_Click(object sender, EventArgs e)
         {
             System = OpenTestCase();
+            Simualte(System);
+            MessageBox.Show(TestingManager.Test(System, FileName));
+
         }
 
         private SimulationSystem OpenTestCase()
@@ -39,6 +42,10 @@ namespace InventorySimulation
             return null;    
         } 
 
+        private void Simualte(SimulationSystem simulationSystem)
+        {
+            simulationSystem.BuildSimulationTable();
+        }
 
     }
 }
