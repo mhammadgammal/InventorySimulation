@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryModels
 {
@@ -14,7 +11,7 @@ namespace InventoryModels
             LeadDaysDistribution = new List<Distribution>();
             SimulationTable = new List<SimulationCase>();
             PerformanceMeasures = new PerformanceMeasures();
-            
+
         }
 
         ///////////// INPUTS /////////////
@@ -35,10 +32,10 @@ namespace InventoryModels
 
         public void CalculateDemandCummulativeProbability()
         {
-            for (int i = 0;  i < DemandDistribution.Count; i++)
+            for (int i = 0; i < DemandDistribution.Count; i++)
             {
 
-                Console.WriteLine("Deman Destribution Count = " + DemandDistribution.Count);
+                //Console.WriteLine("Deman Destribution Count = " + DemandDistribution.Count);
                 if (i == 0)
                 {
                     DemandDistribution[i].CummProbability = DemandDistribution[i].Probability;
@@ -57,7 +54,7 @@ namespace InventoryModels
         {
             for (int i = 0; i < LeadDaysDistribution.Count; i++)
             {
-                
+
                 if (i == 0)
                 {
                     LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i].Probability;
@@ -75,16 +72,22 @@ namespace InventoryModels
         public void BuildSimulationTable()
         {
             int Cycle = 1;
+            int DayWithinCycle = 1;
             for (int i = 0; i < this.NumberOfDays; i++)
             {
-                for (int j = 1; j <= 5; j++)
+                SimulationCase SCase = new SimulationCase();
+                SCase.costructCaseRow(this, Cycle, DayWithinCycle);
+                this.SimulationTable.Add(SCase);
+                
+                if (i % 5 == 0)
                 {
-                    SimulationCase SCase = new SimulationCase();
-                    SCase.costructCaseRow(this, Cycle, j);
-                    this.SimulationTable.Add(SCase);
+                    DayWithinCycle = 1;
+                    Cycle++;
                 }
+                else{ DayWithinCycle++; }
             }
+
         }
-        
+
     }
 }

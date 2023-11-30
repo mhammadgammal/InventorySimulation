@@ -11,7 +11,7 @@ namespace InventoryModels
         }
         private static int NoOfDay = 1;
         private static int LeadTime = 0;
-        private static int OldBegginingInventory = 0;
+        private static int OldBegginingInventory = 1;
         public int Day { get; set; }
         public int Cycle { get; set; }
         public int DayWithinCycle { get; set; }
@@ -66,6 +66,7 @@ namespace InventoryModels
             this.Cycle = Cycle;
             this.DayWithinCycle = DayWithinCycle;
             MapRandomDemand(Sys.DemandDistribution);
+            Console.WriteLine(Sys.StartInventoryQuantity);
             this.BeginningInventory = _BeginningInventory(Sys.StartInventoryQuantity);
             this.EndingInventory = this.Demand - this.BeginningInventory;
             EndingInventoryAndShortage();
@@ -83,7 +84,7 @@ namespace InventoryModels
 
         private void EndingInventoryAndShortage()
         {
-            var DemandResult = this.Demand - this.BeginningInventory;
+            var DemandResult = this.BeginningInventory - this.Demand;
             if (DemandResult > 0)
             {
                 this.EndingInventory = DemandResult;
@@ -92,8 +93,10 @@ namespace InventoryModels
             else
             {
                 this.EndingInventory = 0;
-                this.ShortageQuantity = DemandResult;
+                
+                this.ShortageQuantity = Math.Abs(DemandResult);
             }
+            OldBegginingInventory = this.EndingInventory;
         }
 
         private int _BeginningInventory(int StartInventoryQuantity)

@@ -30,6 +30,7 @@
         {
             this.PickFileButton = new System.Windows.Forms.Button();
             this.openTestCaseDialog = new System.Windows.Forms.OpenFileDialog();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // PickFileButton
@@ -42,10 +43,20 @@
             this.PickFileButton.UseVisualStyleBackColor = true;
             this.PickFileButton.Click += new System.EventHandler(this.PickFileButton_Click);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(624, 17);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(396, 50);
+            this.button1.TabIndex = 1;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(1239, 846);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.PickFileButton);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -57,5 +68,6 @@
 
         private System.Windows.Forms.Button PickFileButton;
         private System.Windows.Forms.OpenFileDialog openTestCaseDialog;
+        private System.Windows.Forms.Button button1;
     }
 }

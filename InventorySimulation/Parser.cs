@@ -13,6 +13,7 @@ namespace InventorySimulation
 
         public static SimulationSystem ReadTestCase(String testCasePath)
         {
+            Console.WriteLine(testCasePath);
             SimulationSystem System = new SimulationSystem();
             Stream stream = File.Open(testCasePath, FileMode.Open, FileAccess.Read);
             StreamReader reader = new StreamReader(stream);
@@ -34,6 +35,10 @@ namespace InventorySimulation
                 else if (line.Equals("StartOrderQuantity"))
                 {
                     System.StartOrderQuantity = Int32.Parse(reader.ReadLine());
+                }
+                else if (line.Equals("StartInventoryQuantity"))
+                {
+                    System.StartInventoryQuantity = Int32.Parse(reader.ReadLine());
                 }
                 else if (line.Equals("NumberOfDays"))
                 {
@@ -62,7 +67,7 @@ namespace InventorySimulation
                     }
                 }
             }
-
+            stream.Close();
             return System;
         }
     }

@@ -26,7 +26,8 @@ namespace InventorySimulation
         {
             System = OpenTestCase();
             Simualte(System);
-            MessageBox.Show(TestingManager.Test(System, FileName));
+            MessageBox.Show("Simulate Finish...\nYou can test now");
+            
 
         }
 
@@ -37,7 +38,8 @@ namespace InventorySimulation
             if (result == DialogResult.OK)
             {
                 FileName = openTestCaseDialog.SafeFileName;
-                return Parser.ReadTestCase(openTestCaseDialog.FileName);
+                Console.WriteLine(FileName);
+                return Parser.ReadTestCase("D:\\University\\4th year\\Modeling\\[Students]_Template\\InventorySimulation\\InventorySimulation\\TestCases\\TestCase1.txt");
             }
             return null;    
         } 
@@ -47,6 +49,10 @@ namespace InventorySimulation
             simulationSystem.BuildSimulationTable();
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(TestingManager.Test(System, Constants.FileNames.TestCase1));
+        }
     }
 }
 
