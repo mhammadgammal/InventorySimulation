@@ -57,6 +57,10 @@ namespace InventorySimulation
             for (int i = 0; i < System.SimulationTable.Count; i++)
             {
                 var SimulateRow = System.SimulationTable[i];    
+                if (SimulateRow.DaysUntilArrive < 0)
+                {
+                    SimulateRow.DaysUntilArrive = 0;
+                }
                 outputDataGridView.Rows.Add(
                     SimulateRow.Day,
                     SimulateRow.Cycle,

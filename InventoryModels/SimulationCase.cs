@@ -11,11 +11,12 @@ namespace InventoryModels
             this.random = random;
         }
         public SimulationCase() {}
+        private Random random;
         private static int NoOfDay = 1;
-        Random random;
         public static int DaysUntilOrderArrives = -2;
         private static int OldBegginingInventory = 1;
         private static int OderQuantity = 0;
+        private static int Shortage = 0;
         public int Day { get; set; }
         public int Cycle { get; set; }
         public int DayWithinCycle { get; set; }
@@ -76,25 +77,33 @@ namespace InventoryModels
         {
             Sys.CalculateDemandCummulativeProbability();
             Sys.CalculateLeadDaysCummulativeProbability();
+            
             this.Day = NoOfDay;
             this.Cycle = Cycle;
             this.DayWithinCycle = DayWithinCycle;
             MapRandomDemand(Sys.DemandDistribution);
             this.BeginningInventory = _BeginningInventory(Sys.StartInventoryQuantity);
             EndingInventoryAndShortage();
-            CheckIfOrder(Sys.OrderUpTo, Sys.LeadDaysDistribution);
+            CheckIfOrder(Sys.OrderUpTo, Sys.LeadDaysDistribution, Sys.StartLeadDays, Sys.StartOrderQuantity);
             HandleDaysUntilOrderArrives();
             NoOfDay++;
         }
 
-        private void CheckIfOrder(int UpToLevel, List<Distribution> DaysUntilOrderArrivesDistribution)
+        private void CheckIfOrder(int UpToLevel, List<Distribution> DaysUntilOrderArrivesDistribution, int StartLeadDays, int StartOrderQuantity)
         {
             if (this.DayWithinCycle == 5)
             {
                 OderQuantity = UpToLevel - this.EndingInventory + this.ShortageQuantity;
                 this.OrderQuantity = OderQuantity;
                 MapRandomLeadDays(DaysUntilOrderArrivesDistribution);
-                
+
+            }
+            else if (this.Day == 1)
+            {
+                OderQuantity = StartOrderQuantity;
+                this.OrderQuantity = 0;
+                DaysUntilOrderArrives = StartLeadDays;
+                this.DaysUntilArrive = DaysUntilOrderArrives;
             }
         }
 
@@ -103,21 +112,25 @@ namespace InventoryModels
             var DemandResult = this.BeginningInventory - this.Demand;
             if (DemandResult > 0)
             {
-                this.EndingInventory = DemandResult;
+                this.EndingInventory = DemandResult - this.ShortageQuantity;
                 this.ShortageQuantity = 0;
             }
             else
             {
                 this.EndingInventory = 0;
-
-                this.ShortageQuantity = Math.Abs(DemandResult);
+                Shortage += Math.Abs(DemandResult);
+                this.ShortageQuantity = Shortage;
             }
             OldBegginingInventory = this.EndingInventory;
         }
 
         private int _BeginningInventory(int StartInventoryQuantity)
         {
-            if (this.Day != 1)
+            if (DaysUntilOrderArrives == -1)
+            {
+                return OderQuantity;
+            }
+            else if (this.Day != 1)
             {
                 return OldBegginingInventory;
             }
@@ -126,21 +139,38 @@ namespace InventoryModels
                 return StartInventoryQuantity;
             }
         }
-
+        
         private void HandleDaysUntilOrderArrives()
         {
-            if (DaysUntilOrderArrives >= 0)
+            //if (DaysUntilOrderArrives >= 0)
+            //{
+            //    this.DaysUntilArrive = DaysUntilOrderArrives--;
+            //}
+            //else if (DaysUntilOrderArrives == -1)
+            //{
+            //    this.BeginningInventory = OderQuantity;
+            //    this.LeadDays = 0;
+            //    DaysUntilOrderArrives = 0;
+            //    this.DaysUntilArrive = DaysUntilOrderArrives;
+            //    OderQuantity = 0;
+            //}
+            if (DaysUntilOrderArrives > 0)
             {
-                DaysUntilOrderArrives--;
+                this.DaysUntilArrive = DaysUntilOrderArrives--;
             }
-            else if (DaysUntilOrderArrives == -1)
+            else if (DaysUntilOrderArrives == 0)
             {
                 this.BeginningInventory = OderQuantity;
                 this.LeadDays = 0;
                 DaysUntilOrderArrives = 0;
+                this.DaysUntilArrive = DaysUntilOrderArrives;
                 OderQuantity = 0;
+                if (Shortage > 0)
+                {
+                    this.EndingInventory -= Shortage;
+                    Shortage = 0;
+                }
             }
-            this.DaysUntilArrive = DaysUntilOrderArrives;
         }
 
     }
