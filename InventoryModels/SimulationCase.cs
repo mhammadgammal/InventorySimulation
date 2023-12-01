@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace InventoryModels
 {
     public class SimulationCase
     {
-        public SimulationCase()
+        public SimulationCase(Random random)
         {
-
+            this.random = random;
         }
+        public SimulationCase() {}
         private static int NoOfDay = 1;
-        private static int LeadTime = 0;
+        Random random;
+        public static int DaysUntilOrderArrives = -2;
         private static int OldBegginingInventory = 1;
+        private static int OderQuantity = 0;
         public int Day { get; set; }
         public int Cycle { get; set; }
         public int DayWithinCycle { get; set; }
@@ -23,18 +27,27 @@ namespace InventoryModels
         public int OrderQuantity { get; set; }
         public int RandomLeadDays { get; set; }
         public int LeadDays { get; set; }
-
+        public int DaysUntilArrive { get; set; }
         public SimulationCase MapRandomDemand(List<Distribution> DemandDistribution)
         {
-            Random random = new Random();
-            this.RandomDemand = random.Next(1, 100);
+
             //If this doesn't work, Go to default apraoach
             // If..else
+            this.RandomDemand = random.Next(1, 100);
+            Console.WriteLine(DemandDistribution.Count);
             for (int i = 0; i < DemandDistribution.Count; i++)
             {
+                Console.WriteLine("Before condition: " + this.RandomDemand);
+                Console.WriteLine("Demand Distribution min range: " + DemandDistribution[i].MinRange);
+                Console.WriteLine("Demand Distribution max range: " + DemandDistribution[i].MaxRange);
+                Console.WriteLine("---------------------------------------");
                 if (this.RandomDemand >= DemandDistribution[i].MinRange && this.RandomDemand <= DemandDistribution[i].MaxRange)
                 {
-                    this.Demand = i;
+                    Console.WriteLine("After condition: " + this.RandomDemand);
+                    Console.WriteLine("Demand Distribution min range: " + DemandDistribution[i].MinRange);
+                    Console.WriteLine("Demand Distribution max range: " + DemandDistribution[i].MaxRange);
+                    this.Demand = DemandDistribution[i].Value;
+                    break;
                 }
 
             }
@@ -43,7 +56,6 @@ namespace InventoryModels
 
         public SimulationCase MapRandomLeadDays(List<Distribution> LeadDaysDistribution)
         {
-            Random random = new Random();
             this.RandomLeadDays = random.Next(1, 100);
             //If this doesn't work, Go to default apraoach
             // If..else
@@ -51,14 +63,16 @@ namespace InventoryModels
             {
                 if (this.RandomLeadDays >= LeadDaysDistribution[i].MinRange && this.RandomLeadDays <= LeadDaysDistribution[i].MaxRange)
                 {
-                    this.LeadDays = i;
+                    this.LeadDays = LeadDaysDistribution[i].Value;
+                    DaysUntilOrderArrives = this.LeadDays;
+                    this.DaysUntilArrive = DaysUntilOrderArrives;
                 }
 
             }
             return this;
         }
 
-        public void costructCaseRow(SimulationSystem Sys, int Cycle, int DayWithinCycle )
+        public void costructCaseRow(SimulationSystem Sys, int Cycle, int DayWithinCycle)
         {
             Sys.CalculateDemandCummulativeProbability();
             Sys.CalculateLeadDaysCummulativeProbability();
@@ -66,19 +80,21 @@ namespace InventoryModels
             this.Cycle = Cycle;
             this.DayWithinCycle = DayWithinCycle;
             MapRandomDemand(Sys.DemandDistribution);
-            Console.WriteLine(Sys.StartInventoryQuantity);
             this.BeginningInventory = _BeginningInventory(Sys.StartInventoryQuantity);
-            this.EndingInventory = this.Demand - this.BeginningInventory;
             EndingInventoryAndShortage();
-            CheckIfOrder(Sys.OrderUpTo);
-
+            CheckIfOrder(Sys.OrderUpTo, Sys.LeadDaysDistribution);
+            HandleDaysUntilOrderArrives();
+            NoOfDay++;
         }
 
-        private void CheckIfOrder(int UpToLevel)
+        private void CheckIfOrder(int UpToLevel, List<Distribution> DaysUntilOrderArrivesDistribution)
         {
             if (this.DayWithinCycle == 5)
             {
-                this.OrderQuantity = UpToLevel - this.EndingInventory + this.ShortageQuantity;
+                OderQuantity = UpToLevel - this.EndingInventory + this.ShortageQuantity;
+                this.OrderQuantity = OderQuantity;
+                MapRandomLeadDays(DaysUntilOrderArrivesDistribution);
+                
             }
         }
 
@@ -93,7 +109,7 @@ namespace InventoryModels
             else
             {
                 this.EndingInventory = 0;
-                
+
                 this.ShortageQuantity = Math.Abs(DemandResult);
             }
             OldBegginingInventory = this.EndingInventory;
@@ -110,5 +126,22 @@ namespace InventoryModels
                 return StartInventoryQuantity;
             }
         }
+
+        private void HandleDaysUntilOrderArrives()
+        {
+            if (DaysUntilOrderArrives >= 0)
+            {
+                DaysUntilOrderArrives--;
+            }
+            else if (DaysUntilOrderArrives == -1)
+            {
+                this.BeginningInventory = OderQuantity;
+                this.LeadDays = 0;
+                DaysUntilOrderArrives = 0;
+                OderQuantity = 0;
+            }
+            this.DaysUntilArrive = DaysUntilOrderArrives;
+        }
+
     }
 }

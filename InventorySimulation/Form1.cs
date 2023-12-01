@@ -20,6 +20,7 @@ namespace InventorySimulation
         public Form1()
         {
             InitializeComponent();
+            outputDataGridView.Visible = false;
         }
 
         private void PickFileButton_Click(object sender, EventArgs e)
@@ -52,7 +53,28 @@ namespace InventorySimulation
         private void button1_Click(object sender, EventArgs e)
         {
             MessageBox.Show(TestingManager.Test(System, Constants.FileNames.TestCase1));
+            outputDataGridView.Visible = true;
+            for (int i = 0; i < System.SimulationTable.Count; i++)
+            {
+                var SimulateRow = System.SimulationTable[i];    
+                outputDataGridView.Rows.Add(
+                    SimulateRow.Day,
+                    SimulateRow.Cycle,
+                    SimulateRow.DayWithinCycle,
+                    SimulateRow.BeginningInventory,
+                    SimulateRow.RandomDemand,
+                    SimulateRow.Demand,
+                    SimulateRow.EndingInventory,
+                    SimulateRow.ShortageQuantity,
+                    SimulateRow.OrderQuantity,
+                    SimulateRow.RandomLeadDays,
+                    SimulateRow.LeadDays,
+                    SimulateRow.DaysUntilArrive
+                    );
+            }
         }
+
+        
     }
 }
 

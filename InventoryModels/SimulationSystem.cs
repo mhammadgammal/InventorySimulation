@@ -73,9 +73,11 @@ namespace InventoryModels
         {
             int Cycle = 1;
             int DayWithinCycle = 1;
-            for (int i = 0; i < this.NumberOfDays; i++)
+            Random random = new Random();   
+            for (int i = 1; i <= this.NumberOfDays; i++)
             {
-                SimulationCase SCase = new SimulationCase();
+                SimulationCase SCase = new SimulationCase(random);
+                
                 SCase.costructCaseRow(this, Cycle, DayWithinCycle);
                 this.SimulationTable.Add(SCase);
                 
@@ -85,8 +87,19 @@ namespace InventoryModels
                     Cycle++;
                 }
                 else{ DayWithinCycle++; }
+                PrintData(SCase);
             }
+        }
 
+        private void PrintData(SimulationCase SCase)
+        {
+            Console.WriteLine("Day: " + SCase.Day);
+            Console.WriteLine("Cycle: " + SCase.Cycle);
+            Console.WriteLine("DayWithinCycle: " + SCase.DayWithinCycle);
+            Console.WriteLine("BegginningInventory: " + SCase.BeginningInventory);
+            Console.WriteLine("Demand: " + SCase.Demand);
+            Console.WriteLine("EndingInventory: " + SCase.EndingInventory);
+            Console.WriteLine("-------------------------------------------------");
         }
 
     }
