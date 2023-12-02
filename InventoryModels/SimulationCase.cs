@@ -86,6 +86,8 @@ namespace InventoryModels
             EndingInventoryAndShortage();
             CheckIfOrder(Sys.OrderUpTo, Sys.LeadDaysDistribution, Sys.StartLeadDays, Sys.StartOrderQuantity);
             HandleDaysUntilOrderArrives();
+            
+            OldBegginingInventory = this.EndingInventory;
             NoOfDay++;
         }
 
@@ -112,16 +114,19 @@ namespace InventoryModels
             var DemandResult = this.BeginningInventory - this.Demand;
             if (DemandResult > 0)
             {
-                this.EndingInventory = DemandResult - this.ShortageQuantity;
+                this.EndingInventory = DemandResult - Shortage;
                 this.ShortageQuantity = 0;
+                Shortage = 0;
             }
             else
             {
                 this.EndingInventory = 0;
+                this.EndingInventory -= Shortage;
                 Shortage += Math.Abs(DemandResult);
                 this.ShortageQuantity = Shortage;
+                
             }
-            OldBegginingInventory = this.EndingInventory;
+            
         }
 
         private int _BeginningInventory(int StartInventoryQuantity)
@@ -160,16 +165,13 @@ namespace InventoryModels
             }
             else if (DaysUntilOrderArrives == 0)
             {
-                this.BeginningInventory = OderQuantity;
+                this.BeginningInventory = OderQuantity + OldBegginingInventory;
+                OldBegginingInventory = this.BeginningInventory;
+                EndingInventoryAndShortage();
                 this.LeadDays = 0;
                 DaysUntilOrderArrives = 0;
                 this.DaysUntilArrive = DaysUntilOrderArrives;
                 OderQuantity = 0;
-                if (Shortage > 0)
-                {
-                    this.EndingInventory -= Shortage;
-                    Shortage = 0;
-                }
             }
         }
 

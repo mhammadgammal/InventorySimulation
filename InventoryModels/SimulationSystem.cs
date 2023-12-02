@@ -63,9 +63,11 @@ namespace InventoryModels
                 else
                 {
                     LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i - 1].CummProbability + LeadDaysDistribution[i].Probability;
-                    DemandDistribution[i].MinRange = DemandDistribution[i - 1].MaxRange + 1;
+                    LeadDaysDistribution[i].MinRange = LeadDaysDistribution[i - 1].MaxRange + 1;
                 }
                 LeadDaysDistribution[i].MaxRange = Decimal.ToInt32(LeadDaysDistribution[i].CummProbability * 100);
+                if (LeadDaysDistribution[i].MinRange == LeadDaysDistribution[i].MaxRange)
+                    LeadDaysDistribution[i].MinRange = 0;
             }
         }
 
