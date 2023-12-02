@@ -54,18 +54,21 @@ namespace InventoryModels
         {
             for (int i = 0; i < LeadDaysDistribution.Count; i++)
             {
-
                 if (i == 0)
                 {
                     LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i].Probability;
-                    LeadDaysDistribution[i].MinRange = 1;
+                    LeadDaysDistribution[i].MaxRange = Decimal.ToInt32(LeadDaysDistribution[i].CummProbability * 100);
+                    continue;
+
                 }
-                else
-                {
-                    LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i - 1].CummProbability + LeadDaysDistribution[i].Probability;
-                    DemandDistribution[i].MinRange = DemandDistribution[i - 1].MaxRange + 1;
-                }
+
+                LeadDaysDistribution[i].CummProbability = LeadDaysDistribution[i - 1].CummProbability + LeadDaysDistribution[i].Probability;
+                LeadDaysDistribution[i].MinRange = LeadDaysDistribution[i - 1].MaxRange + 1;
                 LeadDaysDistribution[i].MaxRange = Decimal.ToInt32(LeadDaysDistribution[i].CummProbability * 100);
+
+
+                if (LeadDaysDistribution[i].MinRange == LeadDaysDistribution[i].MaxRange)
+                    LeadDaysDistribution[i].MinRange = 0;
             }
         }
 
@@ -73,22 +76,36 @@ namespace InventoryModels
         {
             int Cycle = 1;
             int DayWithinCycle = 1;
+            int TotalEndInventory = 0;
+            int TotalShortage = 0;
             Random random = new Random();   
-            for (int i = 1; i <= this.NumberOfDays; i++)
+            for (int i = 0; i < this.NumberOfDays; i++)
             {
                 SimulationCase SCase = new SimulationCase(random);
+                if (i == 0)
+                {
+                    SCase.costructCaseRow(this, new SimulationCase(), Cycle, DayWithinCycle);
+                }
+                else
+                {
+                    SCase.costructCaseRow(this, this.SimulationTable[i - 1], Cycle, DayWithinCycle);
+                }
                 
-                SCase.costructCaseRow(this, Cycle, DayWithinCycle);
                 this.SimulationTable.Add(SCase);
                 
-                if (i % 5 == 0)
+                if ((i + 1) % 5 == 0)
                 {
                     DayWithinCycle = 1;
                     Cycle++;
                 }
                 else{ DayWithinCycle++; }
+                TotalEndInventory += SCase.EndingInventory;
+                TotalShortage += SCase.ShortageQuantity;
                 PrintData(SCase);
             }
+            PerformanceMeasures.EndingInventoryAverage = (TotalEndInventory / (decimal)this.NumberOfDays);
+            PerformanceMeasures.ShortageQuantityAverage = (TotalShortage / (decimal)this.NumberOfDays);
+
         }
 
         private void PrintData(SimulationCase SCase)

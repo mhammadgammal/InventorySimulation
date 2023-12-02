@@ -73,7 +73,7 @@ namespace InventoryModels
             return this;
         }
 
-        public void costructCaseRow(SimulationSystem Sys, int Cycle, int DayWithinCycle)
+        public void costructCaseRow(SimulationSystem Sys,SimulationCase LastRecord, int Cycle, int DayWithinCycle)
         {
             Sys.CalculateDemandCummulativeProbability();
             Sys.CalculateLeadDaysCummulativeProbability();
@@ -82,8 +82,8 @@ namespace InventoryModels
             this.Cycle = Cycle;
             this.DayWithinCycle = DayWithinCycle;
             MapRandomDemand(Sys.DemandDistribution);
-            this.BeginningInventory = _BeginningInventory(Sys.StartInventoryQuantity);
-            EndingInventoryAndShortage();
+            this.BeginningInventory = _BeginningInventory(Sys.StartInventoryQuantity, LastRecord.EndingInventory);
+            EndingInventoryAndShortage(LastRecord.EndingInventory);
             CheckIfOrder(Sys.OrderUpTo, Sys.LeadDaysDistribution, Sys.StartLeadDays, Sys.StartOrderQuantity);
             HandleDaysUntilOrderArrives();
             NoOfDay++;
@@ -102,37 +102,43 @@ namespace InventoryModels
             {
                 OderQuantity = StartOrderQuantity;
                 this.OrderQuantity = 0;
-                DaysUntilOrderArrives = StartLeadDays;
-                this.DaysUntilArrive = DaysUntilOrderArrives;
+                
             }
         }
 
-        private void EndingInventoryAndShortage()
+        private void EndingInventoryAndShortage(int PreviousShortageQuantity)
         {
             var DemandResult = this.BeginningInventory - this.Demand;
             if (DemandResult > 0)
             {
                 this.EndingInventory = DemandResult - this.ShortageQuantity;
-                this.ShortageQuantity = 0;
+                //this.ShortageQuantity = 0;
+                //Shortage = 0;
             }
-            else
+            else if (DemandResult < 0)
             {
                 this.EndingInventory = 0;
                 Shortage += Math.Abs(DemandResult);
                 this.ShortageQuantity = Shortage;
             }
-            OldBegginingInventory = this.EndingInventory;
+
+            if ((DaysUntilOrderArrives == -1 && DemandResult > 0) || this.Day == 3)
+            {
+                this.EndingInventory -= Shortage;
+                this.ShortageQuantity = 0;
+                Shortage = 0;
+            }
         }
 
-        private int _BeginningInventory(int StartInventoryQuantity)
+        private int _BeginningInventory(int StartInventoryQuantity, int previousEnding)
         {
-            if (DaysUntilOrderArrives == -1)
+            if (DaysUntilOrderArrives == -1 || this.Day == 3)
             {
-                return OderQuantity;
+                return OderQuantity + previousEnding;
             }
             else if (this.Day != 1)
             {
-                return OldBegginingInventory;
+                return previousEnding;
             }
             else
             {
@@ -154,22 +160,21 @@ namespace InventoryModels
             //    this.DaysUntilArrive = DaysUntilOrderArrives;
             //    OderQuantity = 0;
             //}
-            if (DaysUntilOrderArrives > 0)
+            if (DaysUntilOrderArrives >= 0)
             {
                 this.DaysUntilArrive = DaysUntilOrderArrives--;
             }
-            else if (DaysUntilOrderArrives == 0)
+            else if (DaysUntilOrderArrives == -1 || this.Day == 3)
             {
-                this.BeginningInventory = OderQuantity;
                 this.LeadDays = 0;
-                DaysUntilOrderArrives = 0;
-                this.DaysUntilArrive = DaysUntilOrderArrives;
+                DaysUntilOrderArrives = -2;
+                this.DaysUntilArrive = 0;
                 OderQuantity = 0;
-                if (Shortage > 0)
-                {
-                    this.EndingInventory -= Shortage;
-                    Shortage = 0;
-                }
+                //if (Shortage > 0)
+                //{
+                //    this.EndingInventory -= Shortage;
+                //    Shortage = 0;
+                //}
             }
         }
 
