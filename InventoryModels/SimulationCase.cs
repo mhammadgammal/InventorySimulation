@@ -124,9 +124,20 @@ namespace InventoryModels
 
             if ((DaysUntilOrderArrives == -1 && DemandResult > 0) || this.Day == 3)
             {
-                this.EndingInventory -= Shortage;
-                this.ShortageQuantity = 0;
-                Shortage = 0;
+                int tmp = this.EndingInventory -= Shortage;
+                if (tmp >= 0)
+                {
+                    this.EndingInventory = tmp;
+                    this.ShortageQuantity = 0;
+                    Shortage = 0;
+                }
+                else
+                {
+                    Shortage = -tmp;
+                    this.ShortageQuantity = Shortage;
+                    this.EndingInventory = 0;    
+                }
+                
             }
         }
 
